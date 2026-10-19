@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "site_origin": "https://control.example.com",
+  "admin_url": "https://admin.example.com",
+  "operator_name": "Example Company",
+  "effective_date": "2026-01-01",
+  "service_stage": "pilot",
+  "availability": "This example deployment is a pilot for Google test users selected by its operator. Device and service access require administrator approval.",
+  "privacy_sections": [
+    {
+      "title": "Operator and scope",
+      "paragraphs": [
+        "Example Company operates this Tailgate deployment. This example policy must be replaced with the operator's actual practices before publication."
+      ]
+    },
+    {
+      "title": "Google identity data",
+      "paragraphs": [
+        "Google sign-in supplies identity claims, including the Google issuer and subject identifier, email and verification claims, and available profile information such as a display name or profile-picture URL. Identity data supports enrollment, administrator authorization and original device-owner attribution."
+      ]
+    },
+    {
+      "title": "Device and access records",
+      "paragraphs": [
+        "The controller stores device names, network addresses, public networking keys, connection metadata and permitted routes. Tailgate records selected teams, device approvals, permitted services and administrator audit actions. Original approval identities can remain after device revocation."
+      ]
+    },
+    {
+      "title": "Storage and infrastructure",
+      "paragraphs": [
+        "The operator maintains controller and approval state, configuration and backups. Describe the actual hosting, Google authentication, cloud/DNS/backup providers and authorized operational access here. Do not promise that operating a private mesh removes those external dependencies."
+      ]
+    },
+    {
+      "title": "Retention and requests",
+      "paragraphs": [
+        "Describe actual active records, historical identity/audit records, backup retention, deletion requests and recovery exceptions here. Removing access does not itself prove deletion from every retained backup. Contact the operator through your usual internal support channel."
+      ]
+    },
+    {
+      "title": "Browser sessions",
+      "paragraphs": [
+        "The administration console uses temporary sign-in and session cookies and request tokens to authenticate administrators and protect changes. Public information pages are static and do not load analytics, third-party scripts or external fonts."
+      ]
+    }
+  ],
+  "terms_sections": [
+    {
+      "title": "Authorized use",
+      "paragraphs": [
+        "Use this deployment only with the operator's permission, approved devices and the access granted to you. Do not attempt to bypass device approvals or service permissions."
+      ]
+    },
+    {
+      "title": "Device responsibility",
+      "paragraphs": [
+        "Protect your Google account and devices, follow the operator's update requirements, and report lost or compromised devices promptly."
+      ]
+    },
+    {
+      "title": "Access changes",
+      "paragraphs": [
+        "The operator manages enrollment, permissions and revocation. Contact support for requested changes and recovery procedures. Add any deployment-specific service terms only after operator review."
+      ]
+    }
+  ],
+  "support_sections": [
+    {
+      "title": "Ask your company administrator",
+      "paragraphs": [
+        "For access, account or privacy questions, contact your company administrator through your usual internal support channel."
+      ]
+    }
+  ]
+}

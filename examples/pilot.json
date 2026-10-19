@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "controller": {
+    "hostname": "control.example.com",
+    "device_domain": "mesh.example.com",
+    "application_domain": "apps.example.com",
+    "public_ipv4": "198.51.100.10",
+    "listen": "127.0.0.1:18090",
+    "metrics": "127.0.0.1:19090"
+  },
+  "identity": {
+    "client_id": "example.apps.googleusercontent.com",
+    "allowed_domains": ["example.com"],
+    "allowed_users": []
+  },
+  "certificates": {"dns_provider": "gcloud", "email": "ops@example.com"},
+  "relay": {"mode": "embedded", "nodes": []},
+  "policy": {"grants": []},
+  "services": []
+}

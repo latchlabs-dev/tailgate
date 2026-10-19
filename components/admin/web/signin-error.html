@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign-in unsuccessful · Tailgate</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main class="wrap login-shell">
+      <section class="login" aria-labelledby="error-title">
+        <div class="brand login-brand"><img src="/favicon.svg" alt="" width="32" height="32">tailgate</div>
+        <h1 id="error-title">Sign-in unsuccessful</h1>
+        <div class="login-error" role="alert">{{.Message}}</div>
+        {{if .Reference}}<p class="error-reference">Error reference<br><code>{{.Reference}}</code></p>{{end}}
+        <a class="primary google-signin" href="/auth/google/start" aria-label="Try Google sign-in again"><img src="/google-sign-in.png" alt="Sign in with Google" width="177" height="40"></a>
+        <p>Requesting company access? <a href="/start">Get started</a></p>
+        {{if .PublicSiteURL}}<nav class="information-links" aria-label="Tailgate information"><a href="{{.PublicSiteURL}}/privacy">Privacy</a><a href="{{.PublicSiteURL}}/terms">Terms</a><a href="{{.PublicSiteURL}}/support">Support</a></nav>{{end}}
+      </section>
+    </main>
+  </body>
+</html>

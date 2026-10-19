@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "template": true,
+  "name": "sample-app",
+  "database": {
+    "name": "sample_app",
+    "role": "sample_app",
+    "password_secret": "db-sample-app"
+  },
+  "identity": {
+    "project": "Sample App",
+    "application": "Sample App Web",
+    "redirect_uris": ["https://sample.apps.example.com/auth/callback"],
+    "post_logout_redirect_uris": ["https://sample.apps.example.com/"],
+    "client_secret": "oidc-sample-app"
+  },
+  "runtime": {
+    "image": "registry.example.com/apps/sample-app@sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "host_port": 18080,
+    "container_port": 8080,
+    "health_path": "/health",
+    "environment_secrets": {}
+  },
+  "ingress": {
+    "hostname": "sample.apps.example.com",
+    "address": "100.120.0.10",
+    "audience": "sample-app"
+  }
+}

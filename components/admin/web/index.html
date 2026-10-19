@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tailgate · Network administration</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="header" id="console-header" hidden>
+      <div class="topbar wrap">
+        <a class="brand" href="#machines" aria-label="Tailgate home"
+          ><img class="brandmark" src="/favicon.svg" alt="" width="28" height="28">tailgate</a
+        >
+        <span class="network-name" id="network-name">Your network</span>
+        <div class="top-actions">
+          <a class="local-badge health-summary" id="mode-badge" href="#settings" aria-label="System health">Health unknown</a
+          ><button class="quiet" id="signout" hidden>Sign out</button
+          >
+        </div>
+      </div>
+      <nav class="tabs wrap" aria-label="Network administration">
+        <a href="#machines" data-page="machines">Machines</a>
+        <a href="#users" data-page="users">Users</a>
+        <a href="#services" data-page="services">Services</a>
+        <a href="#access" data-page="access">Access controls</a>
+        <a href="#bridge" data-page="bridge">Migration bridge</a>
+        <a href="#dns" data-page="dns">DNS</a>
+        <a href="#settings" data-page="settings">Settings</a>
+      </nav>
+    </header>
+    <main class="wrap login-shell" id="main" tabindex="-1">
+      <div class="login">
+        <div class="brand login-brand"><img src="/favicon.svg" alt="" width="32" height="32">tailgate</div>
+        <h1>Sign in to Tailgate</h1>
+        <p role="status">Checking sign-in…</p>
+      </div>
+    </main>
+    <footer class="wrap footer" id="console-footer" hidden>
+      <span>Tailgate</span
+      ><span id="updated"></span><nav id="public-links" aria-label="Tailgate information" hidden></nav>
+    </footer>
+    <div class="toast" id="toast" role="status" hidden></div>
+    <dialog id="modal" aria-labelledby="modal-title"></dialog>
+    <aside
+      class="drawer"
+      id="drawer"
+      aria-labelledby="drawer-title"
+      hidden
+    ></aside>
+  </body>
+</html>

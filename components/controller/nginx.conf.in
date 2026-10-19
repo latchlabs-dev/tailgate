@@ -1,0 +1,33 @@
+# Install only after DNS-01 certificates and deployment preflight pass.
+server {
+    listen 443 ssl;
+    server_name @@HOST@@;
+    ssl_certificate @@CERT@@;
+    ssl_certificate_key @@KEY@@;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    # OAuth callbacks contain short-lived authorization codes; do not inherit request logging.
+    access_log off;
+    # Upstream errors can contain OAuth callback query strings too.
+    error_log /dev/null;
+    # Relay admission only. Embedded DERP verifies internally.
+    location = /verify {
+@@VERIFY_ALLOW@@
+        proxy_pass http://@@BACKEND@@;
+        proxy_set_header Host $host;
+    }
+    location / {
+        proxy_pass http://@@BACKEND@@;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header True-Client-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+}

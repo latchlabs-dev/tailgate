@@ -1,0 +1,20 @@
+# Dedicated exit host only. Do not run alongside a packaged tailscaled service.
+[Unit]
+Description=Tailgate dedicated exit-node Tailscale daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/opt/tailgate/bin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=41641
+StateDirectory=tailscale
+StateDirectoryMode=0700
+RuntimeDirectory=tailscale
+RuntimeDirectoryMode=0755
+Restart=on-failure
+RestartSec=5
+UMask=0077
+MemoryMax=512M
+TasksMax=128
+
+[Install]
+WantedBy=multi-user.target

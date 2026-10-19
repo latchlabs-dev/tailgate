@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "minimum_release_age_days": 7,
+  "components": {
+    "headscale": {
+      "version": "0.29.4",
+      "published_at": "2026-09-23T19:36:28Z",
+      "source": "https://github.com/juanfont/headscale/tree/v0.29.4",
+      "license": "BSD-3-Clause",
+      "artifacts": {
+        "darwin_arm64": {
+          "url": "https://github.com/juanfont/headscale/releases/download/v0.29.4/headscale_0.29.4_darwin_arm64",
+          "sha256": "b5cfd0f81caaa1e8f71f830fd89fdf86a8719bb6e9f9a2ec5b47d9426c96986e",
+          "format": "binary"
+        },
+        "linux_amd64": {
+          "url": "https://github.com/juanfont/headscale/releases/download/v0.29.4/headscale_0.29.4_linux_amd64",
+          "sha256": "212ed0a884c0d3541e094c4bebbe94397df6f4e01bd3d7f059c520cb55e0d757",
+          "format": "binary"
+        },
+        "linux_arm64": {
+          "url": "https://github.com/juanfont/headscale/releases/download/v0.29.4/headscale_0.29.4_linux_arm64",
+          "sha256": "cbad8f02524cc6a94955a107a72e1d4cc652ae3f22e740d5c60884e7f384d60e",
+          "format": "binary"
+        }
+      }
+    },
+    "lego": {
+      "version": "5.5.2",
+      "published_at": "2026-09-23T11:41:29Z",
+      "source": "https://github.com/go-acme/lego/tree/v5.5.2",
+      "license": "MIT",
+      "artifacts": {
+        "darwin_arm64": {
+          "url": "https://github.com/go-acme/lego/releases/download/v5.5.2/lego_v5.5.2_darwin_arm64.tar.gz",
+          "sha256": "9c407ad3193dbdbfe33a202ab5d49cf8bd3fff72e69362857ac91205295dc5b4",
+          "format": "tar.gz"
+        },
+        "linux_amd64": {
+          "url": "https://github.com/go-acme/lego/releases/download/v5.5.2/lego_v5.5.2_linux_amd64.tar.gz",
+          "sha256": "2a35505089e7772c92e1e9ac144df91151ef2eca8568630db0ff91fca06d9bef",
+          "format": "tar.gz"
+        },
+        "linux_arm64": {
+          "url": "https://github.com/go-acme/lego/releases/download/v5.5.2/lego_v5.5.2_linux_arm64.tar.gz",
+          "sha256": "15b14ec2ab14fde69cc8396eb0204c5ce4327e31a486953225a6059b26db3e8c",
+          "format": "tar.gz"
+        }
+      }
+    },
+    "tailscale": {
+      "version": "1.102.5",
+      "published_at": "2026-09-29T18:47:23Z",
+      "source": "https://github.com/tailscale/tailscale/tree/v1.102.5",
+      "license": "BSD-3-Clause",
+      "artifacts": {
+        "linux_arm64": {
+          "url": "https://pkgs.tailscale.com/stable/tailscale_1.102.5_arm64.tgz",
+          "sha256": "60d60109e33d097318c66adc1f1b4e78e528fa1c0357e8bfe82af99f21a18b89",
+          "format": "tar.gz"
+        },
+        "linux_amd64": {
+          "url": "https://pkgs.tailscale.com/stable/tailscale_1.102.5_amd64.tgz",
+          "sha256": "65e6d7f19ad7e1c87d20c2a21e92f38a96795cb897af54b04536590e1c148d12",
+          "format": "tar.gz"
+        }
+      },
+      "derper_build": {
+        "module": "tailscale.com/cmd/derper@v1.102.5",
+        "go_version": "1.27.1"
+      }
+    },
+    "nginx": {
+      "version": "host-managed",
+      "source": "https://nginx.org/en/docs/",
+      "license": "BSD-2-Clause",
+      "constraint": "Existing maintained Linux Nginx; qualification required on each host; deployment records exact package version."
+    }
+  },
+  "validation": {
+    "nginx_image": "nginx@sha256:1eadbb07820339e8bbfed18c771691970baee292ec4ab2558f1453d26153e22d",
+    "gateway_base": {
+      "image": "tailscale/tailscale@sha256:c507f3a2a6ab1cabd8d809b98edeb41edbd5c3fb6ad9632ffd098b4c7d0b4065",
+      "version": "1.102.5",
+      "created_at": "2026-09-21T23:37:13Z",
+      "source": "https://github.com/tailscale/tailscale/tree/v1.102.5",
+      "purpose": "Pinned Alpine iproute2/iptables runtime; official client binaries replaced with verified locked artifacts."
+    }
+  }
+}

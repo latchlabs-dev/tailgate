@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+<title id="title">Tailgate</title>
+<rect x="4" y="4" width="112" height="112" rx="25" fill="#23432f"/>
+<path d="M34 88V42H62V76H88V32" fill="none" stroke="#f5faf3" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="34" cy="88" r="9" fill="#c9e891"/>
+<circle cx="62" cy="42" r="9" fill="#c9e891"/>
+<circle cx="88" cy="32" r="9" fill="#c9e891"/>
+</svg>

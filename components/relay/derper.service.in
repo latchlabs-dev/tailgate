@@ -1,0 +1,26 @@
+[Unit]
+Description=Tailgate standalone DERP relay
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=tailgate-relay
+Group=tailgate-relay
+ExecStart=/opt/tailgate/bin/derper -hostname=@@HOST@@ -a=:443 -http-port=-1 -certmode=manual -certdir=/var/lib/tailgate-relay/certificates -c=/var/lib/tailgate-relay/derper.json -verify-client-url=https://@@CONTROL@@/verify -verify-client-url-fail-open=false
+StateDirectory=tailgate-relay
+StateDirectoryMode=0750
+UMask=0077
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryMax=512M
+TasksMax=128
+
+[Install]
+WantedBy=multi-user.target

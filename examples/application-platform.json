@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "status": "template",
+  "database": {
+    "ssh": "root@192.0.2.20",
+    "host": "192.0.2.20",
+    "direct_port": 5432,
+    "pool_port": 6432
+  },
+  "identity": {
+    "issuer": "https://auth.example.com",
+    "management_url": "https://zitadel-admin.example.com",
+    "pat_secret": "zitadel-service-pat",
+    "organization_id": "1234567890"
+  },
+  "runtime": {
+    "ssh": "deploy@192.0.2.10",
+    "install_root": "/opt/tailgate-apps",
+    "registry_prefix": "registry.example.com/apps"
+  },
+  "ingress": {
+    "application_domain": "apps.example.com",
+    "prefix": "100.120.0.0/16",
+    "mode": "namespace-proxy",
+    "namespace": "tailgate-sample-app",
+    "network_unit": "tailgate-sample-app-network.service",
+    "client_unit": "tailgate-sample-app-client.service",
+    "host_veth_ipv4": "10.203.120.1",
+    "peer_veth_ipv4": "10.203.120.2",
+    "certificate_root": "/var/lib/tailgate/acme/certificates"
+  },
+  "secrets": {
+    "gcp_project": "example-project"
+  },
+  "controller": {
+    "ssh": "deploy@192.0.2.30",
+    "records_path": "/etc/tailgate/records.json"
+  },
+  "adapter": ["python3", "example-adapter.py"]
+}

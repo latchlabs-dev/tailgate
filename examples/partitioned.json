@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "controller": {
+    "hostname": "control.example.com",
+    "device_domain": "mesh.example.com",
+    "application_domain": "apps.example.com",
+    "public_ipv4": "198.51.100.10",
+    "listen": "127.0.0.1:18090",
+    "metrics": "127.0.0.1:19090",
+    "prefixes": {
+      "v4": "100.80.0.0/16",
+      "v6": "fd7a:115c:a1e0:8000::/64",
+      "allocation": "sequential"
+    }
+  },
+  "identity": {
+    "client_id": "example.apps.googleusercontent.com",
+    "allowed_domains": [
+      "example.com"
+    ],
+    "allowed_users": []
+  },
+  "certificates": {
+    "dns_provider": "gcloud",
+    "email": "ops@example.com"
+  },
+  "relay": {
+    "mode": "embedded",
+    "nodes": []
+  },
+  "policy": {
+    "grants": []
+  },
+  "services": []
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "controller": {
+    "hostname": "control.example.com",
+    "device_domain": "mesh.example.com",
+    "application_domain": "apps.example.com",
+    "public_ipv4": "198.51.100.10",
+    "listen": "127.0.0.1:18090",
+    "metrics": "127.0.0.1:19090"
+  },
+  "identity": {"client_id": "example.apps.googleusercontent.com", "allowed_domains": ["example.com"], "allowed_users": []},
+  "certificates": {"dns_provider": "gcloud", "email": "ops@example.com"},
+  "relay": {"mode": "standalone", "nodes": [
+    {"region_id": 901, "code": "relay-a", "hostname": "relay-a.example.com", "ipv4": "198.51.100.11"},
+    {"region_id": 902, "code": "relay-b", "hostname": "relay-b.example.com", "ipv4": "198.51.100.12"}
+  ]},
+  "policy": {
+    "groups": {"group:dev": ["alice@example.com"]},
+    "tagOwners": {"tag:dev-web": ["alice@example.com"]},
+    "grants": [{"src": ["group:dev"], "dst": ["tag:dev-web"], "ip": ["tcp:443"]}]
+  },
+  "services": [{"name": "dashboard.apps.example.com", "address": "100.64.0.20", "backend": "127.0.0.1:3000", "audience": "dev"}]
+}
