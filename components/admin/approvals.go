@@ -126,6 +126,10 @@ type workflowView struct {
 	Audit          []workflowAudit     `json:"audit"`
 	Owners         map[string]user     `json:"original_owners"`
 	Requests       []companyRequest    `json:"requests"`
+	// SSH logins the applied plan activates, and those each pending proposal
+	// would activate, so reviewers see host-account access before approving.
+	SSHAccess   []sshAccessStatus            `json:"ssh_access"`
+	ProposalSSH map[string][]sshAccessStatus `json:"proposal_ssh_access"`
 }
 type compiledGrant struct {
 	Src []string `json:"src"`
@@ -506,6 +510,13 @@ func (a *app) workflowSnapshot(ctx context.Context) (*workflowView, error) {
 			name = n.Name
 		}
 		v.Devices = append(v.Devices, pendingDevice{ID: n.ID, Name: name, Email: email, Eligible: ok, Reason: reason, Approved: slices.Contains(w.state.Plan.Devices, n.ID)})
+	}
+	v.SSHAccess = w.sshAccessUnder(w.state.Plan)
+	v.ProposalSSH = map[string][]sshAccessStatus{}
+	for _, p := range w.state.Proposals {
+		if p.Status == "pending" {
+			v.ProposalSSH[p.ID] = w.sshAccessUnder(p.Plan)
+		}
 	}
 	// HTTP encoding happens after this lock is released. Never expose mutable
 	// ledger slices/maps to another request's concurrent state updates.

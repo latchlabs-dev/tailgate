@@ -794,6 +794,13 @@ function planEditor() {
       catch { toast("The draft must be valid JSON"); }
     }));
 }
+function sshAccessCard(title, rows, names) {
+  const label = id => (names[id] || "device") + " (#" + id + ")";
+  const lines = (rows || []).map(s => el("div", {class:"rule-line"},
+    el("span", {}, label(s.source_id) + " → " + label(s.destination_id) + " as " + s.user + " · " + s.action + (s.check_period ? " every " + s.check_period : "")),
+    el("span", {}, s.active ? "Active" : "Inactive: " + s.reason)));
+  return card(title, el("p", {}, "Host-account SSH logins are pinned by administrators outside proposals. A pin activates whenever the plan grants tcp:22 from a team containing its source device to its destination."), ...(lines.length ? lines : [el("p", {}, "No SSH login pins configured.")]));
+}
 function approvals() {
   const w = data.workflow;
   const section = el("section", {}, heading("Access approvals", "Approve devices, select team members and grant exact services. Revision " + w.revision,
@@ -830,12 +837,15 @@ function approvals() {
     el("span", {}, n.name + " · " + (n.email || "No original owner") + " (#" + n.id + ")"),
     el("span", {}, n.approved ? "Approved" : n.eligible ? "Pending approval" : n.reason),
     n.approved && w.writes ? button("Revoke access", "secondary", () => showDialog("Revoke " + n.name, el("p", {}, "Remove this device from every source team and destination grant. Its protected tag and original identity receipt are retained. Delete and re-enroll to restore personal-device ownership."), button("Revoke access", "danger", () => workflowAction("revoke", {id:n.id})))) : null))));
+  const deviceNames = Object.fromEntries((w.devices || []).map(n => [n.id, n.name]));
   section.append(card("Pending proposals", ...(w.proposals || []).filter(p => p.status === "pending").map(p => el("div", {class:"card"},
     el("p", {}, p.comment || "Access change"), el("p", {}, "Proposed by " + p.actor + " · revision " + p.revision + " · " + humanDate(p.created_at)),
     el("pre", {class:"code"}, JSON.stringify(p.plan, null, 2)),
-    w.writes && !w.blocked ? button("Review and approve", "primary", () => showDialog("Approve complete access plan", el("p", {}, "Approval applies exactly this plan after checking the current device keys, owners, tags and revision. New approvals convert personal devices to protected tagged nodes: personal Taildrop and upstream ownership semantics change. Tailgate preserves their original Google identity."), el("pre", {class:"code"}, JSON.stringify(p.plan, null, 2)), button("Approve and apply", "primary", () => workflowAction("approve", {id:p.id})))) : null,
+    sshAccessCard("SSH logins after approval", (w.proposal_ssh_access || {})[p.id], deviceNames),
+    w.writes && !w.blocked ? button("Review and approve", "primary", () => showDialog("Approve complete access plan", el("p", {}, "Approval applies exactly this plan after checking the current device keys, owners, tags and revision. New approvals convert personal devices to protected tagged nodes: personal Taildrop and upstream ownership semantics change. Tailgate preserves their original Google identity."), el("pre", {class:"code"}, JSON.stringify(p.plan, null, 2)), sshAccessCard("SSH logins after approval", (w.proposal_ssh_access || {})[p.id], deviceNames), button("Approve and apply", "primary", () => workflowAction("approve", {id:p.id})))) : null,
     w.writes ? button("Reject", "secondary", () => workflowAction("reject", {id:p.id})) : null))));
   section.append(card("Applied plan", el("pre", {class:"code"}, JSON.stringify(w.plan, null, 2)), el("p", {}, "Only enrolled destination devices and concrete ports are supported. Subnet, exit-node and server-key provisioning remain separate administrator operations.")));
+  section.append(sshAccessCard("SSH logins (applied plan)", w.ssh_access, deviceNames));
   section.append(card("Recent approval journal", ...(w.audit || []).slice(-12).reverse().map(a => el("p", {}, humanDate(a.at) + " · " + a.actor + " · " + a.action + " · revision " + a.revision))));
   return section;
 }
