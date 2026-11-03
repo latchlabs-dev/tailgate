@@ -96,6 +96,7 @@ type workflowState struct {
 	AutoExcluded   map[string]string        `json:"auto_excluded,omitempty"`
 }
 type workflow struct {
+	sshAccess []sshAccessPin
 	mu        sync.Mutex
 	store     *privateState
 	domains   map[string]bool
@@ -134,6 +135,7 @@ type compiledGrant struct {
 type compiledPolicy struct {
 	TagOwners map[string][]string `json:"tagOwners"`
 	Grants    []compiledGrant     `json:"grants"`
+	SSH       []compiledSSH       `json:"ssh,omitempty"`
 }
 
 var teamName = regexp.MustCompile(`^[a-z][a-z0-9-]{0,31}$`)
@@ -155,9 +157,10 @@ func googleMemberIdentity(id string) bool {
 func loadWorkflow(path string) (*workflow, error) {
 	b, err := readBounded(path)
 	var c struct {
-		StatePath string        `json:"state_path"`
-		Domains   []string      `json:"allowed_domains"`
-		Workloads []workloadPin `json:"workloads,omitempty"`
+		StatePath string         `json:"state_path"`
+		Domains   []string       `json:"allowed_domains"`
+		Workloads []workloadPin  `json:"workloads,omitempty"`
+		SSH       []sshAccessPin `json:"ssh_access,omitempty"`
 	}
 	if err != nil || uniqueJSON(b) != nil {
 		return nil, errors.New("invalid workflow configuration")
@@ -171,12 +174,16 @@ func loadWorkflow(path string) (*workflow, error) {
 	if len(c.Workloads) > 512 {
 		return nil, errors.New("too many workload pins")
 	}
-	if len(c.Workloads) > 0 {
+	if len(c.Workloads) > 0 || len(c.SSH) > 0 {
 		info, e := os.Lstat(path)
 		if e != nil || !trustedWorkloadConfig(info) {
 			return nil, errors.New("workload configuration must be private or root-owned and service-readable without group write access")
 		}
 	}
+	if err := validateSSHAccess(c.SSH); err != nil {
+		return nil, err
+	}
+	w.sshAccess = c.SSH
 	for _, pin := range c.Workloads {
 		_, expiryError := time.Parse(time.RFC3339Nano, pin.Expiry)
 		// Expired pins must still load so the monitor can withdraw existing grants.
@@ -588,7 +595,7 @@ func (a *app) blockWorkflow(reason string) error {
 	persistErr := w.store.write(w.state)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	p, _ := compileAccess(emptyPlan(), w.state.Receipts)
+	p, _ := w.compileAccess(emptyPlan())
 	if err := a.putPolicy(ctx, p); err != nil {
 		return errors.New(reason + "; deny-all enforcement is unverified")
 	}
@@ -672,7 +679,7 @@ func (a *app) applyProposal(ctx context.Context, id, who string) error {
 	if err = w.store.write(w.state); err != nil {
 		return err
 	}
-	stage, err := compileAccess(w.state.Plan, w.state.Receipts)
+	stage, err := w.compileAccess(w.state.Plan)
 	if err == nil {
 		err = a.putPolicy(ctx, stage)
 	}
@@ -698,7 +705,7 @@ func (a *app) applyProposal(ctx context.Context, id, who string) error {
 	}
 	final := ""
 	if err == nil {
-		final, err = compileAccess(p.Plan, w.state.Receipts)
+		final, err = w.compileAccess(p.Plan)
 	}
 	if err == nil {
 		err = a.putPolicy(ctx, final)
@@ -887,7 +894,7 @@ func (a *app) withdrawDeviceLocked(ctx context.Context, id, who string) error {
 		return err
 	}
 	plan := withoutDevice(w.state.Plan, id)
-	p, err := compileAccess(plan, w.state.Receipts)
+	p, err := w.compileAccess(plan)
 	if err != nil {
 		return err
 	}
@@ -930,7 +937,7 @@ func (a *app) reconcileWorkflow(ctx context.Context, explicit bool, who string) 
 			}
 			return a.blockWorkflow(reason)
 		}
-		p, _ := compileAccess(emptyPlan(), w.state.Receipts)
+		p, _ := w.compileAccess(emptyPlan())
 		if err := a.putPolicy(ctx, p); err != nil {
 			return errors.New("deny-all reconciliation could not be verified")
 		}
