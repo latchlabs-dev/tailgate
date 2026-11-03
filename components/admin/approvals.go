@@ -515,7 +515,7 @@ func (a *app) workflowSnapshot(ctx context.Context) (*workflowView, error) {
 	v.ProposalSSH = map[string][]sshAccessStatus{}
 	for _, p := range w.state.Proposals {
 		if p.Status == "pending" {
-			v.ProposalSSH[p.ID] = w.sshAccessUnder(p.Plan)
+			v.ProposalSSH[p.ID] = w.sshAccessProjected(p.Plan, nodes)
 		}
 	}
 	// HTTP encoding happens after this lock is released. Never expose mutable
@@ -975,6 +975,9 @@ func (a *app) reconcileWorkflow(ctx context.Context, explicit bool, who string) 
 	copyPlan := w.state.Plan
 	if err = validatePlan(&copyPlan, nodes, w); err != nil {
 		return a.blockWorkflow("Approved inventory changed or expired; access withdrawn")
+	}
+	if err = a.syncSSHAccess(ctx); err != nil {
+		return errors.New("SSH access configuration could not be applied: " + err.Error())
 	}
 	return nil
 }

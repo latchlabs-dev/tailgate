@@ -118,3 +118,52 @@ func TestNativeSSHCheckPolicy(t *testing.T) {
 		t.Fatal("native controller rejected check-mode SSH policy:", err)
 	}
 }
+func TestSSHAccessPreviewProjectsNewDeviceReceipts(t *testing.T) {
+	w, p := sshFixture()
+	n := approvalNode{MachineKey: "mkey:new"}
+	n.ID = "1"
+	w.sshAccess[0].SourceFingerprint = nodeFingerprint(n)
+	delete(w.state.Receipts, "1")
+	if s := w.sshAccessUnder(p); s[0].Active {
+		t.Fatal("unprojected view unexpectedly active")
+	}
+	if s := w.sshAccessProjected(p, []approvalNode{n}); !s[0].Active {
+		t.Fatalf("preview under-reports SSH that approval would activate: %+v", s)
+	}
+}
+func TestNativeSSHConfigDriftIsApplied(t *testing.T) {
+	_, a, _, _ := nativeApprovalFixture(t)
+	fw, p := sshFixture()
+	w := a.workflow
+	w.sshAccess, w.state.Receipts, w.state.Plan = fw.sshAccess, fw.state.Receipts, p
+	ctx := context.Background()
+	raw, err := w.compileAccess(p)
+	if err != nil || a.putPolicy(ctx, raw) != nil {
+		t.Fatal("seed policy failed", err)
+	}
+	w.state.PolicyHash, _ = canonicalPolicy(raw)
+	rev := w.state.Revision
+	if err = a.syncSSHAccess(ctx); err != nil || w.state.Revision != rev {
+		t.Fatal("no-op sync changed state", err)
+	}
+	// Removing the pin from configuration must revoke it without a plan approval.
+	w.sshAccess = nil
+	if err = a.syncSSHAccess(ctx); err != nil {
+		t.Fatal(err)
+	}
+	live, _ := a.currentPolicy(ctx)
+	var v compiledPolicy
+	if json.Unmarshal([]byte(live), &v) != nil || len(v.SSH) != 0 || w.state.Revision != rev+1 {
+		t.Fatalf("removed SSH pin still enforced: %s", live)
+	}
+	// Non-SSH divergence is never pushed by the SSH sync.
+	w.sshAccess = fw.sshAccess
+	w.state.Plan.Grants[0].Ports = []string{"tcp:22", "tcp:443"}
+	before, _ := a.currentPolicy(ctx)
+	if err = a.syncSSHAccess(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if after, _ := a.currentPolicy(ctx); after != before {
+		t.Fatal("SSH sync pushed a non-SSH policy change")
+	}
+}

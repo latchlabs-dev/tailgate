@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"regexp"
@@ -87,12 +88,31 @@ func (p sshAccessPin) action() (string, string) {
 
 // sshAccessUnder reports, for every configured pin, whether plan activates it.
 func (w *workflow) sshAccessUnder(plan accessPlan) []sshAccessStatus {
+	return w.sshAccessWith(plan, w.state.Receipts)
+}
+
+// sshAccessProjected previews a pending plan using the receipts applyProposal
+// would create for not-yet-approved devices, so the preview cannot under-report.
+func (w *workflow) sshAccessProjected(plan accessPlan, nodes []approvalNode) []sshAccessStatus {
+	receipts := make(map[string]deviceReceipt, len(w.state.Receipts))
+	for id, r := range w.state.Receipts {
+		receipts[id] = r
+	}
+	for _, n := range nodes {
+		if _, ok := receipts[n.ID]; !ok && slices.Contains(plan.Devices, n.ID) {
+			receipts[n.ID] = deviceReceipt{ID: n.ID, Fingerprint: nodeFingerprint(n)}
+		}
+	}
+	return w.sshAccessWith(plan, receipts)
+}
+
+func (w *workflow) sshAccessWith(plan accessPlan, receipts map[string]deviceReceipt) []sshAccessStatus {
 	out := make([]sshAccessStatus, 0, len(w.sshAccess))
 	for _, pin := range w.sshAccess {
 		action, period := pin.action()
 		s := sshAccessStatus{Source: pin.Source, Destination: pin.Destination, User: pin.User, Action: action, CheckPeriod: period}
-		src, srcOK := w.state.Receipts[pin.Source]
-		dst, dstOK := w.state.Receipts[pin.Destination]
+		src, srcOK := receipts[pin.Source]
+		dst, dstOK := receipts[pin.Destination]
 		switch {
 		case !srcOK || src.Fingerprint != pin.SourceFingerprint:
 			s.Reason = "source device identity does not match pin"
@@ -136,4 +156,45 @@ func (w *workflow) compileAccess(plan accessPlan) (string, error) {
 	}
 	b, err := json.MarshalIndent(policy, "", "  ")
 	return string(b), err
+}
+
+// syncSSHAccess applies SSH pin configuration changes to the already-approved
+// plan. Pins live in root-owned config, so removing one must revoke it without
+// waiting for the next plan approval. Only the SSH section may differ; any
+// other divergence is left to the existing guards.
+func (a *app) syncSSHAccess(ctx context.Context) error {
+	w := a.workflow
+	desired, err := w.compileAccess(w.state.Plan)
+	if err != nil {
+		return err
+	}
+	h, err := canonicalPolicy(desired)
+	if err != nil || h == w.state.PolicyHash {
+		return err
+	}
+	live, err := a.currentPolicy(ctx)
+	if err != nil {
+		return err
+	}
+	liveRest, ok1 := policyWithoutSSH(live)
+	desiredRest, ok2 := policyWithoutSSH(desired)
+	if !ok1 || !ok2 || liveRest != desiredRest {
+		return nil
+	}
+	if err = a.putPolicy(ctx, desired); err != nil {
+		return err
+	}
+	w.state.PolicyHash = h
+	w.state.Revision++
+	w.record("system", "SSH access configuration applied", "")
+	return w.store.write(w.state)
+}
+
+func policyWithoutSSH(raw string) (string, bool) {
+	var v map[string]any
+	if json.Unmarshal([]byte(raw), &v) != nil {
+		return "", false
+	}
+	delete(v, "ssh")
+	return digest(v), true
 }
